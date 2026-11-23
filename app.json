@@ -1,0 +1,107 @@
+{
+  "expo": {
+    "name": "Ophixe",
+    "slug": "ophixe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "ophixe",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/brand/icon.png",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ophixe.app",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "audio",
+          "remote-notification"
+        ]
+      }
+    },
+    "android": {
+      "package": "com.ophixe.app",
+      "softwareKeyboardLayoutMode": "resize",
+      "allowBackup": false,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/brand/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
+      "versionCode": 11
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-apple-authentication",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow Ophixe to record voice notes and make voice and video calls."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/brand/icon.png",
+          "backgroundColor": "#000000",
+          "resizeMode": "contain"
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Ophixe to confirm it's you before deleting a group."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Ophixe to scan community invite codes and make video calls."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Ophixe to attach photos and videos to your chats.",
+          "cameraPermission": "Allow Ophixe to take photos and videos for your chats.",
+          "microphonePermission": "Allow Ophixe to record sound with the videos you take for your chats."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Ophixe to save chat photos and videos to your Ophixe Media album.",
+          "savePhotosPermission": "Allow Ophixe to save chat photos and videos to your Ophixe Media album.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/brand/icon.png",
+          "color": "#000000",
+          "androidMode": "default"
+        }
+      ],
+      "expo-video",
+      "expo-sharing"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "1551e482-611b-4061-ba5f-016340a68727"
+      }
+    },
+    "owner": "princeekinedev"
+  }
+}

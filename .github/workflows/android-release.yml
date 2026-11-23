@@ -1,0 +1,139 @@
+name: Android release (APK)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    env:
+      EXPO_PUBLIC_SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+      EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.EXPO_PUBLIC_SUPABASE_ANON_KEY }}
+      EXPO_PUBLIC_GIPHY_KEY: ${{ secrets.EXPO_PUBLIC_GIPHY_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # React Native compiles C++ (Folly/codegen/etc.) per ABI, which needs far
+      # more than the ~14 GB free on a stock runner. Reclaim space BEFORE
+      # setup-node/setup-java repopulate the tool cache. $ANDROID_HOME is kept.
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /usr/local/share/boost
+          if [ -n "$AGENT_TOOLSDIRECTORY" ]; then sudo rm -rf "$AGENT_TOOLSDIRECTORY"; fi
+          sudo docker image prune --all --force
+          df -h
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Accept Android SDK licenses
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+
+      # Cache Gradle downloads/transforms only (NOT android/, which prebuild
+      # regenerates). actions/cache works whether or not android/ exists yet,
+      # unlike setup-java's cache option which needed gradle files present.
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('package-lock.json', '.github/workflows/android-release.yml') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - run: npm ci
+
+      - run: npx expo prebuild --platform android --clean
+
+      # FCM sender for closed-app push. The JSON lives only in the
+      # GOOGLE_SERVICES_JSON repo secret (never committed); without it the
+      # APK still builds but cannot receive pushes while closed.
+      - name: Add google-services.json
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+            echo "google-services.json written"
+          else
+            echo "No GOOGLE_SERVICES_JSON secret: building without FCM"
+          fi
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+
+      # Sanity check: the prebuild template signs the release buildType with
+      # the debug keystore, so assembleRelease needs no extra signing setup.
+      # This just prints the signing lines into the log.
+      - name: Show release signing config
+        run: grep -n "signingConfig" android/app/build.gradle || true
+
+      # Release, not debug: a debug APK boots into the Expo dev-client menu
+      # because expo-dev-client is installed; the release APK boots straight
+      # into the app. Single ABI: the APK is for testers on real (arm64)
+      # devices. Building all 4 ABIs quadruples C++ compile time/disk and is
+      # what pushed the runner past its limits (compiler crash after ~31 min).
+      - run: ./gradlew assembleRelease --stacktrace --no-daemon --max-workers=2 -PreactNativeArchitectures=arm64-v8a
+        working-directory: android
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ophixe-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+
+      - name: Rename APK for testers
+        run: cp android/app/build/outputs/apk/release/app-release.apk ophixe-release.apk
+
+      # Rolling release: anonymous direct APK link for testers
+      # (repo must be public at download time). Same `release` tag
+      # updated every run; previous APK is replaced.
+      - name: Publish APK to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: release
+          name: Ophixe release (latest CI build)
+          body: Latest release APK, built from ${{ github.sha }}. Uninstall any older Ophixe build first, then install on a physical arm64 Android device.
+          prerelease: true
+          make_latest: true
+          fail_on_unmatched_files: true
+          files: ophixe-release.apk
+
+      # Disabled: the APK (>50 MB) exceeds Supabase's single-upload cap, so
+      # this step always 400s. Testers use the `release` tag above.
+      - name: Publish APK to public tester link
+        if: false
+        env:
+          SUPABASE_URL: ${{ secrets.EXPO_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY secret"
+            exit 1
+          fi
+          HOST="${SUPABASE_URL#https://}"; HOST="${HOST%%/*}"; echo "Target project host: $HOST"
+          ls -lh android/app/build/outputs/apk/release/app-release.apk
+          HTTP_CODE=$(curl -sS -o upload_resp.txt -w "%{http_code}" -X POST "$SUPABASE_URL/storage/v1/object/releases/ophixe-release.apk" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/vnd.android.package-archive" \
+            -H "x-upsert: true" \
+            --data-binary "@android/app/build/outputs/apk/release/app-release.apk")
+          echo "Upload HTTP status: $HTTP_CODE"
+          cat upload_resp.txt
+          echo
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "::error::APK upload failed with HTTP $HTTP_CODE (server response above)"
+            exit 1
+          fi

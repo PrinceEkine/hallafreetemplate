@@ -1,0 +1,5 @@
+{
+  "name": "call-keepalive",
+  "version": "1.0.0",
+  "description": "Foreground microphone service so Ophixe calls survive minimizing the app (Android)."
+}

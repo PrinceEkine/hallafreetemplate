@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 320">
+  <defs>
+    <linearGradient id="ophixe-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6C3DF4"/>
+      <stop offset="1" stop-color="#241B5E"/>
+    </linearGradient>
+  </defs>
+  <rect x="16" y="40" width="240" height="240" rx="58" fill="url(#ophixe-bg)"/>
+  <g transform="translate(136 160) scale(0.7) translate(-248 -250)">
+    <circle cx="248" cy="256" r="112" fill="none" stroke="#FFFFFF" stroke-width="54"/>
+    <path d="M208 216 L288 296" stroke="#3EE6C4" stroke-width="38" stroke-linecap="round"/>
+    <path d="M288 216 L208 296" stroke="#3EE6C4" stroke-width="38" stroke-linecap="round"/>
+    <circle cx="376" cy="132" r="26" fill="#3EE6C4"/>
+    <circle cx="424" cy="178" r="12" fill="#FFFFFF" opacity="0.9"/>
+  </g>
+  <text x="290" y="208" font-family="Arial, Helvetica, sans-serif" font-size="104" font-weight="900" letter-spacing="-2" fill="#221D4D">ophixe</text>
+</svg>

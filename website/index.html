@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ophixe — Your company's work hub</title>
+<meta name="description" content="Ophixe is the work hub for company staff: announcements, work chat, calls, tasks, forms, dues and events in one app." />
+<meta name="theme-color" content="#0a0a0b" />
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+<link rel="icon" href="assets/icon-512.png" sizes="512x512" type="image/png" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Ophixe — Your company's work hub" />
+<meta property="og:description" content="Announcements, work chat, calls, tasks, forms, dues and events — everything your team needs, in one fast app." />
+<meta property="og:image" content="assets/icon-512.png" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Ophixe — Your company's work hub" />
+<meta name="twitter:description" content="Announcements, work chat, calls, tasks, forms, dues and events in one app." />
+<style>
+  :root {
+    --bg: #0a0a0b;
+    --panel: #141417;
+    --card: #1d1d22;
+    --border: #2e2e36;
+    --text: #f5f5f7;
+    --sub: #a7a7b0;
+    --teal: #3ee6c4;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+  footer { position: relative; z-index: 1; }
+
+  /* Living background: drifting aurora + floating particles. */
+  #bg-canvas {
+    position: fixed; inset: 0; z-index: 0;
+    width: 100%; height: 100%; pointer-events: none;
+  }
+  .aurora {
+    position: fixed; z-index: 0; pointer-events: none;
+    width: 60vmax; height: 60vmax; border-radius: 50%;
+    filter: blur(90px); opacity: 0.16;
+  }
+  .aurora-a {
+    top: -20vmax; right: -15vmax;
+    background: radial-gradient(circle, #3ee6c4 0%, transparent 65%);
+    animation: drift-a 26s ease-in-out infinite alternate;
+  }
+  .aurora-b {
+    bottom: -25vmax; left: -18vmax;
+    background: radial-gradient(circle, #6c5ce7 0%, transparent 65%);
+    animation: drift-b 32s ease-in-out infinite alternate;
+  }
+  @keyframes drift-a {
+    from { transform: translate(0, 0) scale(1); }
+    to { transform: translate(-9vmax, 7vmax) scale(1.15); }
+  }
+  @keyframes drift-b {
+    from { transform: translate(0, 0) scale(1.1); }
+    to { transform: translate(8vmax, -6vmax) scale(0.95); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #bg-canvas, .aurora { display: none; }
+    .phone-float { animation: none !important; }
+    .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  }
+
+  /* Nav */
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(10, 10, 11, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    display: flex; align-items: center; gap: 20px;
+    padding: 12px 24px; max-width: 1080px; margin: 0 auto;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 800; font-size: 20px; }
+  .brand img { width: 34px; height: 34px; border-radius: 9px; }
+  .nav-links { margin-left: auto; display: flex; gap: 20px; font-size: 14px; }
+  .nav-links a { color: var(--sub); text-decoration: none; font-weight: 600; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    background: var(--text); color: #000 !important;
+    padding: 8px 18px; border-radius: 999px; font-weight: 800 !important;
+  }
+  @media (max-width: 640px) { .nav-links a:not(.nav-cta) { display: none; } }
+
+  /* Hero */
+  .hero {
+    display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px;
+    padding: 72px 0 56px; align-items: center;
+  }
+  @media (max-width: 860px) { .hero { grid-template-columns: 1fr; padding-top: 48px; } }
+  .kicker {
+    display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: 2px;
+    color: var(--teal); border: 1px solid var(--border); border-radius: 999px;
+    padding: 6px 16px; margin-bottom: 20px;
+  }
+  h1 { font-size: clamp(38px, 6vw, 60px); line-height: 1.05; margin: 0 0 16px; letter-spacing: -1px; }
+  h1 .teal { color: var(--teal); }
+  .lede { font-size: 18px; color: var(--sub); margin: 0 0 28px; max-width: 520px; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 26px; border-radius: 12px; font-weight: 800; font-size: 15px;
+    text-decoration: none; border: 1px solid transparent;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary:hover { box-shadow: 0 12px 32px rgba(245, 245, 247, 0.25); }
+  .btn-teal:hover { box-shadow: 0 12px 32px rgba(62, 230, 196, 0.35); }
+  .btn-ghost:hover { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5); border-color: var(--teal); }
+  .btn svg.btn-logo { width: 20px; height: 20px; flex-shrink: 0; }
+  .logo-chip {
+    background: #fff; border-radius: 6px; padding: 2px;
+    width: 24px; height: 24px; display: inline-flex; flex-shrink: 0;
+  }
+  .logo-chip img { width: 100%; height: 100%; object-fit: contain; }
+  .btn img.btn-mark { width: 20px; height: 20px; flex-shrink: 0; }
+  .store-badge { display: inline-block; transition: transform 0.18s ease, filter 0.18s ease; }
+  .store-badge:hover { transform: translateY(-2px); filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.5)); }
+  .store-badge img { width: 172px; max-width: 100%; height: auto; display: block; }
+  @media (max-width: 380px) {
+    .phone { width: 262px; }
+    .btn { padding: 14px 20px; font-size: 14px; }
+  }
+  h1 .teal { animation: teal-glow 3.2s ease-in-out infinite; }
+  @keyframes teal-glow {
+    0%, 100% { text-shadow: 0 0 0 rgba(62, 230, 196, 0); }
+    50% { text-shadow: 0 0 34px rgba(62, 230, 196, 0.55); }
+  }
+  .kicker { animation: kicker-pulse 3.2s ease-in-out infinite; }
+  @keyframes kicker-pulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(62, 230, 196, 0); }
+    50% { box-shadow: 0 0 22px rgba(62, 230, 196, 0.28); }
+  }
+
+  /* Scroll reveals. */
+  .reveal { opacity: 0; transform: translateY(26px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  .reveal-1 { transition-delay: 0.08s; }
+  .reveal-2 { transition-delay: 0.16s; }
+  .reveal-3 { transition-delay: 0.24s; }
+  .reveal-4 { transition-delay: 0.32s; }
+  .reveal-5 { transition-delay: 0.4s; }
+  .btn-primary { background: var(--text); color: #000; }
+  .btn-ghost { border-color: var(--border); color: var(--text); }
+  .btn-teal { background: var(--teal); color: #000; }
+  .btn-disabled { opacity: 0.45; cursor: not-allowed; }
+  .fine { font-size: 13px; color: var(--sub); margin-top: 14px; }
+</style>
+</head>
+<body>
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+<div class="aurora aurora-a" aria-hidden="true"></div>
+<div class="aurora aurora-b" aria-hidden="true"></div>
+<nav>
+  <div class="nav-inner">
+    <a class="brand" href="#top">
+      <img src="assets/icon.svg" alt="Ophixe logo" />
+      ophixe
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#demo">Demo</a>
+      <a href="#join">Join</a>
+      <a class="nav-cta" href="#download">Download</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap" id="top">
+  <section class="hero">
+    <div>
+      <span class="kicker">FOR COMPANY STAFF</span>
+      <h1>Your company's <span class="teal">work hub.</span></h1>
+      <p class="lede">
+        Announcements, work chat, calls, tasks, forms, dues and events —
+        everything your team needs, in one fast app.
+      </p>
+      <div class="btn-row">
+        <a class="btn btn-primary" id="hero-android" href="#"><span class="logo-chip"><img src="assets/badges/android.svg" alt="" /></span>Download for Android</a>
+        <a class="btn btn-ghost" id="hero-play" href="#"><svg class="btn-logo" viewBox="12 8 33 37" aria-hidden="true"><path d="m27.622 25.899-14.194 15.066c5.34e-4 0.0031 0.0016 0.0057 0.0021 0.0089 0.43532 1.636 1.9296 2.8406 3.703 2.8406 0.70892 0 1.3745-0.19166 1.9453-0.52812l0.04533-0.02656 15.978-9.22-7.479-8.141" fill="#eb3131"/><path d="m41.983 23.334-0.0136-0.0093-6.8982-3.999-7.7717 6.9156 7.7987 7.7977 6.8618-3.9592c1.203-0.64945 2.0197-1.9177 2.0197-3.3802 0-1.452-0.80571-2.7139-1.9968-3.3655" fill="#f6b60b"/><path d="m13.426 12.37c-0.08533 0.31466-0.13018 0.64425-0.13018 0.98651v26.623c0 0.34162 0.04432 0.67233 0.13072 0.98587l14.684-14.681-14.684-13.914" fill="#5778c5"/><path d="m27.727 26.668 7.3473-7.3451-15.96-9.2534c-0.58012-0.34746-1.2572-0.54799-1.9817-0.54799-1.7734 0-3.2697 1.2068-3.7051 2.8447-5.34e-4 0.0016-5.34e-4 0.0027-5.34e-4 0.0041l14.3 14.298" fill="#3bad49"/></svg>Google Play</a>
+      </div>
+      <p class="fine" id="hero-ios-note">iPhone version coming soon — join the waitlist below.</p>
+    </div>
+    <div class="phone-stage" id="phone-stage">
+      <div class="phone phone-float" id="hero-phone" aria-hidden="true">
+        <div class="phone-screen">
+          <div class="phone-status"><span>9:41</span><span class="phone-batt"></span></div>
+          <div class="phone-notch"></div>
+          <div class="phone-header">HOME</div>
+          <div class="phone-body">
+            <div class="mini-post">
+              <div class="mini-head"><span class="mini-avatar"></span>
+                <span><b>Town hall Friday</b><i>HR Team · 2h</i></span>
+              </div>
+              <p>All-hands moved to 10am in the main hall. See you there!</p>
+              <div class="mini-actions"><span class="liked">Like</span><span>Comment</span><span>Share</span></div>
+            </div>
+            <div class="mini-post">
+              <div class="mini-head"><span class="mini-avatar"></span>
+                <span><b>Payslips ready</b><i>Finance · 5h</i></span>
+              </div>
+              <p>November payslips are out. Confirm yours in Forms.</p>
+              <div class="mini-actions"><span>Like</span><span>Comment</span><span>Share</span></div>
+            </div>
+            <div class="mini-post">
+              <div class="mini-head"><span class="mini-avatar"></span>
+                <span><b>Shift roster</b><i>Ops · 1d</i></span>
+              </div>
+              <p>Next week's roster is posted. Swap requests close Thursday.</p>
+              <div class="mini-actions"><span>Like</span><span>Comment</span><span>Share</span></div>
+            </div>
+          </div>
+          <div class="phone-tabs">
+            <span>Update</span><span>Chat</span><span class="on">Home</span><span>Teams</span><span>Event</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .phone-stage { perspective: 1200px; }
+    .phone {
+      width: 300px; margin: 0 auto; background: #000;
+      border-radius: 44px; padding: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(62, 230, 196, 0.12);
+      transform-style: preserve-3d;
+      transition: transform 0.25s ease-out;
+    }
+    .phone-float { animation: phone-float 6s ease-in-out infinite; }
+    @keyframes phone-float {
+      0%, 100% { translate: 0 0; }
+      50% { translate: 0 -12px; }
+    }
+    .phone-screen {
+      background: #17171c; border-radius: 36px; overflow: hidden;
+      position: relative; height: 600px; display: flex; flex-direction: column;
+    }
+    .phone-status {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 24px 4px; font-size: 12px; color: var(--sub);
+    }
+    .phone-batt { width: 40px; height: 12px; border-radius: 4px; background: #232329; }
+    .phone-notch {
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      width: 100px; height: 20px; border-radius: 10px; background: #000;
+    }
+    .phone-header {
+      background: #000; text-align: center; font-weight: 800; font-size: 13px;
+      letter-spacing: 2px; padding: 14px; margin-top: 6px;
+    }
+    .phone-body { flex: 1; overflow: hidden; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .mini-post { background: #232329; border-radius: 14px; padding: 12px; font-size: 12px; }
+    .mini-head { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .mini-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+    .mini-head b { display: block; font-size: 12px; }
+    .mini-head i { display: block; font-style: normal; font-size: 10px; color: var(--sub); }
+    .mini-post p { margin: 0 0 8px; color: #d7d7dc; }
+    .mini-actions { display: flex; gap: 14px; font-size: 11px; color: var(--sub); font-weight: 700; }
+    .mini-actions .liked { color: var(--teal); }
+    .phone-tabs {
+      display: flex; background: #101014; border-top: 1px solid var(--border);
+      font-size: 10px; font-weight: 700; color: var(--sub);
+    }
+    .phone-tabs span { flex: 1; text-align: center; padding: 12px 0 16px; }
+    .phone-tabs .on { color: var(--teal); }
+
+    section.block { padding: 56px 0; border-top: 1px solid var(--border); }
+    section.block h2 { font-size: clamp(28px, 4vw, 40px); margin: 0 0 8px; letter-spacing: -0.5px; }
+    section.block .sub { color: var(--sub); margin: 0 0 32px; max-width: 640px; font-size: 17px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    @media (max-width: 860px) { .grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
+    }
+    .card .icon {
+      width: 44px; height: 44px; border-radius: 12px; background: var(--card);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 14px;
+    }
+    .card h3 { margin: 0 0 6px; font-size: 17px; }
+    .card p { margin: 0; color: var(--sub); font-size: 14px; }
+  </style>
+
+  <section class="block reveal" id="features">
+    <h2>Everything work, one app</h2>
+    <p class="sub">Built for company staff — not a social network. You only see your own company's space.</p>
+    <div class="grid">
+      <div class="card reveal"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3ee6c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v3l4 1 10 5V6L7 11H3z"/><path d="M7 15v4"/></svg></div><h3>Announcements</h3><p>Admin updates reach every staff phone instantly, with read tracking.</p></div>
+      <div class="card reveal reveal-1"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3ee6c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5z"/></svg></div><h3>Work chat</h3><p>End-to-end encrypted DMs with coworkers plus team groups.</p></div>
+      <div class="card reveal reveal-2"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3ee6c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="13" height="12" rx="2"/><path d="M15 10l7-3v10l-7-3"/></svg></div><h3>Calls &amp; meetings</h3><p>Voice and video calls, plus meeting rooms the team drops into.</p></div>
+      <div class="card reveal reveal-3"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3ee6c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg></div><h3>Tasks &amp; projects</h3><p>Assign work, track progress, and keep every team aligned.</p></div>
+      <div class="card reveal reveal-4"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3ee6c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></div><h3>Forms &amp; approvals</h3><p>Leave requests, reports and expenses with one-tap admin approval.</p></div>
+      <div class="card reveal reveal-5"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3ee6c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18"/><circle cx="17" cy="15" r="1" fill="#3ee6c4"/></svg></div><h3>Wallet &amp; events</h3><p>Collect dues by transfer and rally staff around company events.</p></div>
+    </div>
+  </section>
+
+  <section class="block reveal" id="demo">
+    <h2>See it in 50 seconds</h2>
+    <p class="sub">From signup to invite code to your first team chat — the whole tour.</p>
+    <style>
+      .video-shell {
+        background: #000; border: 1px solid var(--border);
+        border-radius: 20px; overflow: hidden;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 70px rgba(62, 230, 196, 0.1);
+      }
+      .video-shell video { display: block; width: 100%; aspect-ratio: 16 / 9; }
+      .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 20px; }
+      @media (max-width: 640px) { .steps { grid-template-columns: 1fr; } }
+      .step {
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: 12px; padding: 14px 16px; font-size: 14px; color: var(--sub);
+      }
+      .step b { display: block; color: var(--text); font-size: 14px; margin-bottom: 2px; }
+      .step b span { color: var(--teal); margin-right: 6px; }
+    </style>
+    <div class="video-shell">
+      <video controls preload="metadata" poster="assets/demo-poster.png" playsinline>
+        <source src="assets/demo.mp4" type="video/mp4" />
+        Your browser can't play this video. Download the app below to try Ophixe instead.
+      </video>
+    </div>
+    <div class="steps">
+      <div class="step"><b><span>1</span>Download &amp; sign up</b>Get the app and create your account with your work email.</div>
+      <div class="step"><b><span>2</span>Enter your invite code</b>Type the code from your admin — approval takes minutes.</div>
+      <div class="step"><b><span>3</span>Work as one team</b>Follow the feed, chat, join calls, and get tasks done.</div>
+    </div>
+  </section>
+
+  <section class="block reveal" id="join">
+    <h2>Have an invite code?</h2>
+    <p class="sub">Type it here — we'll open the app straight to your company's join screen.</p>
+    <style>
+      .join-card {
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: 20px; padding: 32px; max-width: 560px;
+      }
+      .join-row { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+      #invite-code {
+        flex: 1; min-width: 180px; background: var(--card);
+        border: 1px solid var(--border); border-radius: 12px;
+        color: var(--text); font-size: 20px; font-weight: 800;
+        letter-spacing: 4px; text-transform: uppercase;
+        padding: 14px 18px; text-align: center;
+      }
+      #invite-code:focus { outline: 2px solid var(--teal); border-color: var(--teal); }
+      #join-msg { font-size: 14px; color: var(--sub); margin: 12px 0 0; min-height: 22px; }
+    </style>
+    <div class="join-card">
+      <div style="font-size:12px;font-weight:800;letter-spacing:2px;color:var(--sub)">INVITE CODE</div>
+      <div class="join-row">
+        <input id="invite-code" maxlength="12" placeholder="K7Q2XD" autocomplete="off" spellcheck="false" />
+        <button class="btn btn-teal" id="join-btn" type="button">Join now</button>
+      </div>
+      <p id="join-msg">No app yet? We'll send you to download it first.</p>
+    </div>
+  </section>
+
+  <section class="block reveal" id="download">
+    <h2>Download Ophixe</h2>
+    <p class="sub">Free for staff. Pick your phone below — the app walks you through the rest.</p>
+    <div class="grid">
+      <div class="card">
+        <h3>Android (APK)</h3>
+        <p>Direct download, always the newest build. Allow "Install unknown apps" when asked.</p>
+        <div style="margin-top:16px"><a class="btn btn-primary" id="dl-apk" href="#"><span class="logo-chip"><img src="assets/badges/android.svg" alt="" /></span>Download APK</a></div>
+      </div>
+      <div class="card">
+        <h3>Google Play</h3>
+        <p>Install and update through the Play Store, like any other app.</p>
+        <div style="margin-top:16px"><a class="store-badge" id="dl-play" href="#"><img src="assets/badges/google-play.svg" alt="Get it on Google Play" /></a></div>
+      </div>
+      <div class="card">
+        <h3>iPhone</h3>
+        <p id="ios-note">Coming soon — leave your email with your admin and we'll notify you.</p>
+        <div style="margin-top:16px" id="ios-cta"><a class="btn btn-ghost btn-disabled" id="dl-ios" href="#" aria-disabled="true"><img class="btn-mark" src="assets/badges/apple-logo.svg" alt="" />Coming soon</a></div>
+      </div>
+    </div>
+    <p class="fine" style="margin-top:20px">For admins: share this page's link with new hires along with your community invite code.</p>
+  </section>
+</div>
+
+<footer>
+  <style>
+    footer { border-top: 1px solid var(--border); padding: 32px 0 48px; color: var(--sub); font-size: 14px; }
+    .foot-inner { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .foot-inner .spacer { flex: 1; }
+    footer a { color: var(--sub); text-decoration: none; font-weight: 600; }
+    footer a:hover { color: var(--text); }
+  </style>
+  <div class="wrap foot-inner">
+    <span><b style="color:var(--text)">ophixe</b> — your company's work hub</span>
+    <span class="spacer"></span>
+    <a href="#features">Features</a>
+    <a href="#demo">Demo</a>
+    <a href="#join">Join</a>
+    <a href="#download">Download</a>
+    <a href="terms.html">Terms</a>
+    <a href="privacy.html">Privacy</a>
+  </div>
+</footer>
+
+<script>
+  // ---- Edit these when store links go live ----
+  var CONFIG = {
+    androidApk: "https://github.com/PrinceEkine/halla/releases/download/release/ophixe-release.apk",
+    playStore: "https://play.google.com/store/apps/details?id=com.ophixe.app",
+    appStore: "", // paste the App Store URL here when iOS ships
+    scheme: "ophixe://join?code="
+  };
+  (function () {
+    function set(id, url) { document.getElementById(id).href = url; }
+    set("hero-android", CONFIG.androidApk);
+    set("hero-play", CONFIG.playStore);
+    set("dl-apk", CONFIG.androidApk);
+    set("dl-play", CONFIG.playStore);
+    var iosBtn = document.getElementById("dl-ios");
+    if (CONFIG.appStore) {
+      document.getElementById("ios-cta").innerHTML = '<a class="store-badge" id="dl-ios"><img src="assets/badges/app-store.svg" alt="Download on the App Store" /></a>';
+      document.getElementById("dl-ios").href = CONFIG.appStore;
+      document.getElementById("ios-note").textContent = "Install from the App Store and join with your invite code.";
+      document.getElementById("hero-ios-note").textContent = "Also on iPhone — grab it below.";
+    } else {
+      iosBtn.addEventListener("click", function (e) { e.preventDefault(); });
+    }
+    // Join box: deep-link into the app, fall back to download.
+    var input = document.getElementById("invite-code");
+    var msg = document.getElementById("join-msg");
+    function storeFor() {
+      return /iPhone|iPad|iPod/i.test(navigator.userAgent) && CONFIG.appStore
+        ? CONFIG.appStore
+        : CONFIG.playStore;
+    }
+    function join() {
+      var code = input.value.trim().toUpperCase();
+      if (!code) {
+        msg.textContent = "Type your invite code first — it looks like K7Q2XD.";
+        input.focus();
+        return;
+      }
+      msg.textContent = "Opening the app…";
+      var left = false;
+      function onHide() { if (document.hidden) left = true; }
+      document.addEventListener("visibilitychange", onHide);
+      window.location.href = CONFIG.scheme + encodeURIComponent(code);
+      setTimeout(function () {
+        document.removeEventListener("visibilitychange", onHide);
+        if (!left) {
+          msg.textContent = "App not installed — taking you to download it…";
+          window.location.href = storeFor();
+        }
+      }, 1500);
+    }
+    document.getElementById("join-btn").addEventListener("click", join);
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") join(); });
+  })();
+</script>
+<script>
+  // Living background + motion. Skipped entirely for reduced motion.
+  (function () {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    // --- Floating particles ---
+    var canvas = document.getElementById("bg-canvas");
+    if (canvas && canvas.getContext) {
+      var ctx = canvas.getContext("2d");
+      var W = 0, H = 0, parts = [];
+      var COLORS = ["62,230,196", "108,92,231", "245,245,247"];
+      function resize() {
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        W = window.innerWidth; H = window.innerHeight;
+        canvas.width = W * dpr; canvas.height = H * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      function spawn(n) {
+        parts = [];
+        for (var i = 0; i < n; i++) {
+          parts.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: 0.8 + Math.random() * 2.2,
+            vx: (Math.random() - 0.5) * 0.22,
+            vy: -0.06 - Math.random() * 0.22,
+            c: COLORS[(Math.random() * COLORS.length) | 0],
+            a: 0.15 + Math.random() * 0.45,
+            tw: Math.random() * Math.PI * 2,
+            ts: 0.004 + Math.random() * 0.012
+          });
+        }
+      }
+      function tick() {
+        if (!document.hidden) {
+          ctx.clearRect(0, 0, W, H);
+          for (var i = 0; i < parts.length; i++) {
+            var p = parts[i];
+            p.x += p.vx; p.y += p.vy; p.tw += p.ts;
+            if (p.y < -8) { p.y = H + 8; p.x = Math.random() * W; }
+            if (p.x < -8) p.x = W + 8; else if (p.x > W + 8) p.x = -8;
+            var alpha = p.a * (0.6 + 0.4 * Math.sin(p.tw));
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(" + p.c + "," + alpha.toFixed(3) + ")";
+            ctx.fill();
+          }
+        }
+        requestAnimationFrame(tick);
+      }
+      resize();
+      spawn(Math.min(90, Math.max(36, (W * H) / 22000 | 0)));
+      window.addEventListener("resize", function () {
+        resize();
+        spawn(Math.min(90, Math.max(36, (W * H) / 22000 | 0)));
+      });
+      requestAnimationFrame(tick);
+    }
+
+    // --- 3D tilt on the hero phone (fine pointers only) ---
+    var stage = document.getElementById("phone-stage");
+    var phone = document.getElementById("hero-phone");
+    if (stage && phone && window.matchMedia("(pointer: fine)").matches) {
+      stage.addEventListener("mousemove", function (e) {
+        var r = stage.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width - 0.5;
+        var py = (e.clientY - r.top) / r.height - 0.5;
+        phone.style.transform =
+          "rotateY(" + (px * 16).toFixed(2) + "deg) rotateX(" + (-py * 14).toFixed(2) + "deg)";
+      });
+      stage.addEventListener("mouseleave", function () {
+        phone.style.transform = "";
+      });
+    }
+
+    // --- Scroll reveals ---
+    var els = document.querySelectorAll(".reveal");
+    if ("IntersectionObserver" in window && els.length) {
+      var io = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (entries[i].isIntersecting) {
+            entries[i].target.classList.add("in");
+            io.unobserve(entries[i].target);
+          }
+        }
+      }, { threshold: 0.12 });
+      for (var j = 0; j < els.length; j++) io.observe(els[j]);
+    } else {
+      for (var k = 0; k < els.length; k++) els[k].classList.add("in");
+    }
+  })();
+</script>
+</body>
+</html>

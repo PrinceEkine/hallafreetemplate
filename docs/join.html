@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Join on Ophixe</title>
+<style>
+  body { margin: 0; font-family: system-ui, sans-serif; background: #000; color: #fff; }
+  main { max-width: 420px; margin: 0 auto; padding: 64px 24px; text-align: center; }
+  h1 { font-size: 28px; margin: 0 0 8px; }
+  p { color: #bbb; line-height: 1.5; }
+  a.btn { display: block; margin: 12px 0; padding: 16px; border-radius: 12px;
+    font-weight: 700; text-decoration: none; }
+  a.primary { background: #fff; color: #000; }
+  a.ghost { border: 1px solid #555; color: #fff; }
+  code { color: #fff; font-size: 18px; letter-spacing: 2px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>ophixe</h1>
+  <p>You were invited to join a community.</p>
+  <p>Invite code<br /><code id="code">…</code></p>
+  <p id="status">Opening the app…</p>
+  <a id="open" class="btn primary" href="#">Open in app</a>
+  <a id="store" class="btn ghost" href="https://play.google.com/store/apps/details?id=com.ophixe.app">Get the app</a>
+</main>
+<script>
+  (function () {
+    var code = new URLSearchParams(location.search).get('code') || '';
+    document.getElementById('code').textContent = code || '—';
+    var appUrl = 'ophixe://join?code=' + encodeURIComponent(code);
+    var storeUrl = document.getElementById('store').href;
+    document.getElementById('open').href = appUrl;
+    if (!code) {
+      document.getElementById('status').textContent = 'This invite link has no code.';
+      return;
+    }
+    var left = false;
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) left = true;
+    });
+    window.location.href = appUrl;
+    setTimeout(function () {
+      if (!left) {
+        document.getElementById('status').textContent =
+          'App not installed — taking you to the Play Store…';
+        window.location.href = storeUrl;
+      }
+    }, 1500);
+  })();
+</script>
+</body>
+</html>
